@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:ital,wght@1,800&family=Cute+Font&display=swap"
+          rel="stylesheet">
+
+    <title>To Do List</title>
+
+    <style>
+        * {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+
+        body {
+            background-color: #f3f3ee;
+        }
+
+        @media (max-width: 1200px) {
+            #text {
+                display: none;
+            }
+        }
+
+        .mypic {
+            width: 100%;
+            height: 200px;
+
+            color: white;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mypic > h1 {
+            font-size: 70px;
+            color: black;
+            font-weight: 700;
+            font-family: 'Alegreya Sans SC', sans-serif;
+        }
+
+        .mypic > p, .mypic > h2 {
+            color: black;
+        }
+
+        .mybox {
+            background-color: white;
+            width: 95%;
+            max-width: 550px;
+            height: 800px;
+            padding: 20px;
+            box-shadow: 0px 0px 2px 0px gray;
+            margin: 20px auto;
+
+        }
+
+        .mybucket {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mybucket > input {
+            width: 70%;
+        }
+
+        .mybox > li {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 10px;
+            min-height: 48px;
+        }
+
+        .mybox > li > h2 {
+            max-width: 75%;
+            font-size: 20px;
+            font-weight: 500;
+            margin-right: auto;
+            margin-bottom: 0px;
+        }
+
+        .mybox > li > h2.done {
+            text-decoration: line-through
+        }
+
+        #temp {
+            font-size: 25px;
+        }
+
+        img {
+            width: 50px;
+            border-radius: 50%;
+            margin: 30px 0 0 15px;
+            transition: width 0.5s ease-in-out;
+        }
+        img:hover {
+            width: 70px;
+        }
+
+
+    </style>
+    <script>
+        $(document).ready(function () {
+            show_todo();
+            $('#date').text(totalNow)
+        });
+
+        const now = new Date()
+
+        const yearNow = now.getFullYear()
+        const monthNow = now.getMonth() + 1
+        const dateNow = now.getDate()
+        // 요일값 가져오기
+        const WEEK = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
+        const dayNow = WEEK[now.getDay()]
+
+        const totalNow = `${yearNow}년 ${monthNow}월 ${dateNow}일 ${dayNow}`
+
+        function getClock() {
+            $('#clock').empty()
+            const now = new Date()
+            const hours = String(now.getHours()).padStart(2, '0')
+            const minutes = String(now.getMinutes()).padStart(2, '0')
+            const secconds = String(now.getSeconds()).padStart(2, '0')
+            const clock = `${hours}:${minutes}:${secconds}`
+            $('#clock').append(clock)
+        }
+
+        getClock()
+        setInterval(getClock, 1000)
+
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url: "http://spartacodingclub.shop/sparta_api/weather/seoul",
+                data: {},
+                success: function (response) {
+                    let temp = response.temp
+                    // console.log(temp)
+                    $('#temp').text(temp)
+                }
+            })
+        });
+
+        function show_todo() {
+            $.ajax({
+                type: "GET",
+                url: "/todo",
+                data: {},
+                success: function (response) {
+                    let rows = response.todos
+                    for (let i = 0; i < rows.length; i++) {
+                        let todo = rows[i]['todo']
+                        let num = rows[i]['num']
+                        let done = rows[i]['done']
+
+                        let txt = ``
+                        if (done === 0) {
+                            txt = `<li>
+                                                <h2>✔${todo}</h2>
+                                                <button onclick="done_todo(${num})" type="button" class="btn">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
+                                                         class="bi bi-file-earmark-check" viewBox="0 0 16 16">
+                                                        <path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
+                                                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                                                    </svg>
+                                                </button>
+                                                <button onclick="empty_todo(${num})" type="button" class="btn">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
+                                                         class="bi bi-trash" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                        <path fill-rule="evenodd"
+                                                              d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                    </svg>
+                                                </button>
+                                            </li>`
+                        } else {
+                            txt = `<li>
+                                            <h2 class="done">✔${todo}</h2>
+                                            <button onclick="cancel_todo(${num})" type="button" class="btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
+                                                     class="bi bi-file-earmark-check-fill" viewBox="0 0 16 16">
+                                                    <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm1.354 4.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708.708z"/>
+                                                </svg>
+                                            </button>
+                                            <button onclick="empty_todo(${num})" type="button" class="btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
+                                                     class="bi bi-trash" viewBox="0 0 16 16">
+                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                    <path fill-rule="evenodd"
+                                                          d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                </svg>
+                                            </button>
+                                        </li>`
+                        }
+                        $('#todo-list').append(txt)
+                    }
+                }
+            });
+        }
+
+        function save_todo() {
+            let todo = $('#todo').val()
+
+            $.ajax({
+                type: "POST",
+                url: "/todo",
+                data: {todo_give: todo},
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            });
+        }
+
+        function done_todo(num) {
+            $.ajax({
+                type: "POST",
+                url: "/todo/done",
+                data: {num_give: num},
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            });
+        }
+
+        function cancel_todo(num) {
+            $.ajax({
+                type: "POST",
+                url: "/todo/cancel",
+                data: {num_give: num},
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            });
+        }
+
+        function empty_todo(num) {
+            $.ajax({
+                type: "POST",
+                url: "/todo/empty",
+                data: {num_give: num},
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            });
+        }
+
+
+    </script>
+</head>
+<body>
+    <p class="d-flex justify-content-end me-5 mt-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+             class="bi bi-thermometer-half" viewBox="0 0 16 16">
+            <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415z"/>
+            <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
+        </svg>
+        <span id="temp"></span>°C
+    </p>
+    <div class="mypic">
+        <h1>To Do List</h1>
+        <p id="date">날짜</p>
+    </div>
+
+    <div class="container flex">
+        <div class="row">
+            <div class="mybox col-md-8" id="todo-list">
+                <div class="mybucket">
+                    <input id="todo" class="form-control" type="text" placeholder="이루고 싶은 것을 입력하세요">
+                    <button onclick="save_todo()" type="button" class="btn btn-outline-dark">기록하기</button>
+                </div>
+                <hr>
+            </div>
+            <div id="text" class="col-md-4 mt-5 me-5 pt-5 text-end">
+                <h3 id="clock">00:00:00</h3>
+                <h2>항해99 22조 Toy Project</h2>
+                <img src="https://cdn.discordapp.com/attachments/1031442114170605602/1035787288409546782/Screen_Shot_2022-10-27_at_10.01.13_PM.png"
+                     alt=""/>
+                <img src="https://velog.velcdn.com/images/channn02/profile/b49cdc0d-b3f1-4000-8677-c3e39b2dc5b3/image.jpeg"
+                     alt=""/>
+                <img src="https://cdn.discordapp.com/attachments/1031442114170605602/1035789196994035763/Screen_Shot_2022-10-29_at_2.30.57_PM.png"
+                     alt=""/>
+                <img src="https://cdn.discordapp.com/attachments/1031442114170605602/1035789817889439815/Screen_Shot_2022-10-27_at_10.09.18_PM.png"
+                     alt=""/>
+                <img src="https://cdn.discordapp.com/attachments/1031442114170605602/1035789817394507786/unknown.png"
+                     alt=""/>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
